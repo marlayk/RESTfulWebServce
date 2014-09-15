@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+   <title>Assignment 3</title>   
+   <strong><link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"></strong>    
+      <style type="text/css">
+      html, body, #map_canvas{
+	height: 85%; 
+      	margin: 0; 
+	padding: 0; 
+	}
+   </style>
+   <script type="text/javascript"
+       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8bSTvlDCh4hxfH3j6MKI-_Lj8Ym2AXJ0&sensor=true">
+   </script>
+   <script type="text/javascript">
+    var map;
+    var markers = [];
+     function initialize() {
+       var mapOptions = {
+         center: new google.maps.LatLng(52.3740300, 4.8896900),
+         zoom: 15,
+         mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById("map_canvas"),
+        mapOptions);
+     }
+
+     google.maps.event.addDomListener(window, 'load', initialize);
+      
+     function setAllMap(map) {
+         for (var i = 0; i < markers.length; i++) {
+    	      markers[i].setMap(map);
+  	 }
+     }
+
+     function clearMarkers() {
+  	setAllMap(null);
+     } 
+     
+     function deleteMarkers() {
+  	clearMarkers();
+ 	markers = [];
+     }
+
+    </script>
+
+    <script type="text/javascript"
+       src="http://code.jquery.com/jquery-1.9.1.min.js">
+    </script>
+  </head>
+  <body onload="initialize()">
+ 
+    <script type="text/javascript">
+       function jsonfetch() {
+         var city = $('#city').val();
+         var query = $('#query').val();
+         var url = 'http://50.112.190.161:5000/venues';
+         var data = {'city': city, 'q' : query};
+         $.getJSON(url, data=data, function(json){
+           var bounds = new google.maps.LatLngBounds();
+	   deleteMarkers();
+	     for (var i in json) {
+		var r = json[i];
+		var name = r[0];
+		var lat = r[1];
+		var lng = r[2];
+                var myLatlng = new google.maps.LatLng(lat,lng);
+		var mapOptions = {
+  			zoom: 4,
+  			center: myLatlng
+			}
+
+	// To add the marker to the map, use the 'map' property
+		var marker = new google.maps.Marker({
+    		   position: myLatlng,
+    		   map: map,
+    		   title:name
+		});
+		markers.push(marker);
+		bounds.extend(marker.position);
+	    }
+	    map.fitBounds(bounds);
+         });
+      }
+   </script>
+
+  <header>
+    <div class="container">
+      <h1 class="logo">Assignment 3</h1>
+      <strong><nav>
+      <ul class="menu">
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+      </ul>
+      </nav>
+    </strong>
+   </div>
+  </header>
+
+
+   <div class="jumbo">
+     <h3>Search for a Venue</h3>
+      <form role='form'>
+       <div class='form-group'>
+        <label for='city'>City</label>
+        <input type='text' class='form-control' id='city' placeholder='Type some nifty message'>
+        <label for='query'>Venue</label>
+        <input type='text' class='form-control' id='query' placeholder='Type some nifty message'>
+        <input type="button" value="Submit" onclick='jsonfetch()' />
+       </div>
+    </form>
+  </div>
+
+
+  <div id="map_canvas"></div>  
+  </body>
+</html>
